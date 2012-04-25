@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.11
+Version 0.13
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.13';
 
 $VERSION = eval $VERSION;
 
@@ -31,20 +31,26 @@ has model                      => ( is => 'ro', isa => 'Str', default => 'DB::Us
 has login_id_field             => ( is => 'ro', isa => 'Str', default => 'username' );
 has login_id_db_field          => ( is => 'ro', isa => 'Str', default => 'username' );
 
+has register_template          => ( is => 'ro', isa => 'Str', default => 'auth/register.tt');
 has login_template             => ( is => 'ro', isa => 'Str', default => 'auth/login.tt');
 has change_password_template   => ( is => 'ro', isa => 'Str', default => 'auth/change-password.tt' );
 has forgot_password_template   => ( is => 'ro', isa => 'Str', default => 'auth/forgot-password.tt' );
 has reset_password_template    => ( is => 'ro', isa => 'Str', default => 'auth/reset-password.tt' );
 
-has login_required_message     => ( is => 'ro', isa => 'Str', default => "You need to login." );
-has already_logged_in_message  => ( is => 'ro', isa => 'Str', default => "You are already logged in." );
-has login_successful_message   => ( is => 'ro', isa => 'Str', default => "You have logged in." );
-has logout_successful_message  => ( is => 'ro', isa => 'Str', default => "You have been logged out." );
-has login_failed_message       => ( is => 'ro', isa => 'Str', default => "Bad username or password." );
-has password_changed_message   => ( is => 'ro', isa => 'Str', default => "Password changed." );
-has password_reset_message     => ( is => 'ro', isa => 'Str', default => "Password reset successfully." );
-has forgot_password_id_unknown => ( is => 'ro', isa => 'Str', default => "Email address not registered." );
+has register_successful_message    => ( is => 'ro', isa => 'Str', default => "You are now registered." );
+has register_exists_failed_message => ( is => 'ro', isa => 'Str', default => "That username already exists." );
+has login_required_message         => ( is => 'ro', isa => 'Str', default => "You need to login." );
+has already_logged_in_message      => ( is => 'ro', isa => 'Str', default => "You are already logged in." );
+has login_successful_message       => ( is => 'ro', isa => 'Str', default => "You have logged in." );
+has logout_successful_message      => ( is => 'ro', isa => 'Str', default => "You have been logged out." );
+has login_failed_message           => ( is => 'ro', isa => 'Str', default => "Bad username or password." );
+has password_changed_message       => ( is => 'ro', isa => 'Str', default => "Password changed." );
+has password_reset_message         => ( is => 'ro', isa => 'Str', default => "Password reset successfully." );
+has forgot_password_id_unknown     => ( is => 'ro', isa => 'Str', default => "Email address not registered." );
 
+has auto_login_after_register    => ( is => 'ro', isa => 'Bool', default => 1 );
+
+has action_after_register        => ( is => 'ro', isa => 'Str', default => '/' );
 has action_after_login           => ( is => 'ro', isa => 'Str', default => '/' );
 has action_after_change_password => ( is => 'ro', isa => 'Str', default => '/' );
 
@@ -52,6 +58,11 @@ has forgot_password_email_view           => ( is => 'ro', isa => 'Str', default 
 has forgot_password_email_from           => ( is => 'ro', isa => 'Str', default => '' );
 has forgot_password_email_subject        => ( is => 'ro', isa => 'Str', default => 'Forgot Password' );
 has forgot_password_email_template_plain => ( is => 'ro', isa => 'Str', default => 'reset-password-plain.tt' );
+
+has register_email_view           => ( is => 'ro', isa => 'Str', default => 'Email::Template' );
+has register_email_from           => ( is => 'ro', isa => 'Str', default => '' );
+has register_email_subject        => ( is => 'ro', isa => 'Str', default => 'Registration Success' );
+has register_email_template_plain => ( is => 'ro', isa => 'Str', default => 'register-plain.tt' );
 
 has token_salt        => ( is => 'ro', isa => 'Str', default => "abc123" );
 
@@ -89,17 +100,25 @@ Configure it as you like ...
  	
          login_id_field                         email
          login_id_db_field                      email
- 	
+ 	 
+ 	 register_template                      auth/register.tt
          login_template                         auth/login.tt
          change_password_template               auth/change-password.tt
          forgot_password_template               auth/forgot-password.tt
          reset_password_template                auth/reset-password.tt
  
          forgot_password_email_view             Email::Template
-         forgot_password_email_from             "Password Reset" <nobody@example.com>
+         forgot_password_email_from             "MyApp" <nobody@example.com>
          forgot_password_email_subject          Password Reset
          forgot_password_email_template_plain   reset-password-plain.tt
+
+         register_email_view                    Email::Template
+         register_email_from                    "MyApp" <nobody@example.com>
+         register_email_subject                 Registration Success
+         register_email_template_plain          register-plain.tt
  
+         register_successful_message            "You are now registered"
+         register_exists_failed_message         "That username is already registered."
          login_required_message                 "You need to login."
          already_logged_in_message              "You are already logged in."
          login_successful_message               "Logged in!"
@@ -111,6 +130,9 @@ Configure it as you like ...
  	
          token_salt                             'tgve546vy6yv%^$fghY56VH54& H54&%$uy^5 Y^53U&$u v5ev'
  	
+ 	 auto_login_after_register              1
+ 	 
+         action_after_register                  /admin/index
          action_after_login                     /admin/index
          action_after_change_password           /admin/index
  
@@ -161,6 +183,91 @@ sub authenticated :Chained('base') :PathPart('') :CaptureArgs(0)
 		$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_error_msg( $self->login_required_message ) } ) );
 		$c->detach;
 	}
+}
+
+=head2 register ( end-point: /register )
+
+Register.
+
+ sub register :Chained('base') :PathPart :Args(0)
+
+=cut
+
+sub register :Chained('base') :PathPart :Args(0)
+{
+	my ( $self, $c ) = @_;
+
+	if ( $c->user_exists )
+	{
+		$c->response->redirect( $c->uri_for_action( $self->action_after_login, { mid => $c->set_status_msg( $self->already_logged_in_message ) } ) );
+		return;
+	}
+
+	my $form = $self->form_handler->new( active => [ $self->login_id_field, 'password', 'confirm_password' ] );
+	
+	if ( $c->req->method eq 'POST' )
+	{
+		$form->process( params => $c->request->params );
+
+		if ( $form->validated )
+		{
+			if ( $c->model( $self->model )->search( { $self->login_id_db_field => $form->field( $self->login_id_field )->value } )->all )
+			{
+				$c->stash( error_msg => $self->register_exists_failed_message );
+			}
+			else
+			{
+				my $user = $c->model( $self->model )->create( { $self->login_id_db_field => $form->field( $self->login_id_field )->value,
+				                                                password                 => $form->field('password')->value,
+				                                              } );
+	
+				$self->_send_register_email( $c, user => $user );
+
+				if ( $self->auto_login_after_register )
+				{
+					$c->authenticate( { $self->login_id_db_field => $form->field( $self->login_id_field )->value, password => $form->field('password')->value } );
+				}
+				
+				$c->response->redirect( $c->uri_for_action( $self->action_after_register, { mid => $c->set_status_msg( $self->register_successful_message ) } ) );
+				return;
+			}
+		}
+	}
+
+	$c->stash( template => $self->register_template, form => $form );
+}
+
+=head2 _send_register_email
+
+Uses C<Catalyst::View::Email::Template> by default.
+
+=cut
+
+sub _send_register_email
+{
+	my ( $self, $c, %args ) = @_;
+
+	# send registration email to the user
+	
+	$c->stash->{ email_template } = { to           => $args{ user }->email,
+	                                  from         => $self->register_email_from,
+	                                  subject      => $self->register_email_subject,
+	                                  content_type => 'multipart/alternative',
+	                                  templates => [
+	                                                 { template        => $self->register_email_template_plain,
+	                                                   content_type    => 'text/plain',
+	                                                   charset         => 'utf-8',
+	                                                   encoding        => 'quoted-printable',
+	                                                   view            => $self->view, 
+	                                                 }
+	                                               ]
+	};
+        
+        $c->forward( $c->view( $self->register_email_view ) );
+
+	$c->stash( status_msg => "Registration email sent to " . $args{ user }->email );
+
+	return $self;
 }
 
 =head2 login ( end-point: /login )
