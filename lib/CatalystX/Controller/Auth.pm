@@ -241,9 +241,22 @@ sub register :Chained('base') :PathPart :Args(0)
 
 Uses C<Catalyst::View::Email::Template> by default.
 
+The 3 parameters passed are C<$self> (since it is an instance method), the Catalyst context C<$c>, and a hash containing the C<user> object.
+
 =cut
 
 sub _send_register_email
+{
+	my $self = shift;
+	
+	# legacy method here, just passing through
+	
+	$self->send_register_email( @_ );
+
+	return $self;
+}
+
+sub send_register_email
 {
 	my ( $self, $c, %args ) = @_;
 
@@ -307,8 +320,7 @@ sub login :Chained('base') :PathPart :Args(0)
 					$c->response->cookies->{ remember } = { value => '' };
 				}
 
-				$c->response->redirect( $c->uri_for_action( $self->action_after_login, { mid => $c->set_status_msg( $self->login_successful_message ) } ) );
-				return;
+				$self->post_login( $c );
 			}
 			else
 			{
@@ -318,6 +330,20 @@ sub login :Chained('base') :PathPart :Args(0)
 	}
 
 	$c->stash( template => $self->login_template, form => $form );
+}
+
+=head2 post_login
+
+After a successfull login.  By defualt redirects to C<action_after_login> with a status message of C<login_successful_message>.
+
+=cut
+
+sub post_login
+{
+	my ( $self, $c ) = @_;
+	
+	$c->response->redirect( $c->uri_for_action( $self->action_after_login, { mid => $c->set_status_msg( $self->login_successful_message ) } ) );
+	$c->detach;
 }
 
 =head2 logout ( end-point: /logout )
@@ -334,12 +360,26 @@ sub logout :Chained('base') :PathPart :Args(0)
 
 	$c->logout;
 
+	$c->post_logout( $c );
+}
+
+=head2 post_logout
+
+After logging out.  By default redirects to C<login> with a status message of C<logout_successful_message.
+
+=cut
+
+sub post_logout
+{
+	my ( $self, $c ) = @_;
+	
 	$c->response->redirect( $c->uri_for( $self->action_for( 'login' ), { mid => $c->set_status_msg( $self->logout_successful_message ) } ) );
+	$c->detach;
 }
 
 =head2 forgot_password ( end-point: /forgot-password/ )
 
-Send a forgotten password token to reset it.
+Send a forgotten password token to reset it.  This method uses the built-in features from L<HTML::FormHandlerX::Form::Login> for handling the token, etc.
 
  sub forgot_password :Chained('base') :PathPart('forgot-password') :Args(0)
 
@@ -383,13 +423,26 @@ sub forgot_password :Chained('base') :PathPart('forgot-password') :Args(0)
 	$c->stash( template => $self->forgot_password_template, form => $form );
 }
 
-=head2 _send_password_reset_email
+=head2 send_password_reset_email
 
 Uses C<Catalyst::View::Email::Template> by default.
+
+The 3 parameters passed are C<$self> (since it is an instance method), the Catalyst context C<$c>, and a hash containing the C<user> object.
 
 =cut
 
 sub _send_password_reset_email
+{
+	my $self = shift;
+	
+	# legacy method here, just passing through
+	
+	$self->send_password_reset_email( @_ );
+
+	return $self;
+}
+	
+sub send_password_reset_email
 {
 	my ( $self, $c, %args ) = @_;
 
@@ -471,12 +524,26 @@ sub reset_password :Chained('base') :PathPart('reset-password') :Args(0)
 			
 			$user->update;	
 
-	 		$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_status_msg( $self->password_reset_message ) } ) );
-			return;
+			$self->post_reset_password( $c );
 		}
 	}
 	
 	$c->stash( template => $self->reset_password_template, form => $form );
+}
+
+=head2 post_reset_password
+
+After successfully resetting a users password.  By default redirects to C<login> with a status message of C<password_reset_message>.
+
+=cut
+
+sub post_reset_password
+{
+	my ( $self, $c )
+
+	$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_status_msg( $self->password_reset_message ) } ) );
+	$c->detach;
+	
 }
 
 =head2 get ( mid-point: /auth/*/ )
@@ -496,7 +563,7 @@ sub get :Chained('base') :PathPart('auth') :CaptureArgs(1)
 	if ( ! $user )
 	{
 		$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_status_msg( $self->login_required_message ) } ) );
-		return;
+		$c->detach;
 	}
 
 	$c->stash( user => $user );
@@ -534,13 +601,26 @@ sub change_password :Chained('get') :PathPart('change-password') :Args(0)
 			
 				$user->update;	
 
-		 		$c->response->redirect( $c->uri_for_action( $self->action_after_change_password, { mid => $c->set_status_msg( $self->password_changed_message ) } ) );
-				return;
+				$self->post_change_password( $c );
 			}
 		}
 	}
 
 	$c->stash( template => $self->change_password_template, form => $form );
+}
+
+=head2 post_change_password
+
+After changing a password.  By default redirects to C<action_after_change_password> with status message C<password_changed_message>.
+
+=cut
+
+sub post_change_password
+{
+	my ( $self, $c ) = @_;
+				
+	$c->response->redirect( $c->uri_for_action( $self->action_after_change_password, { mid => $c->set_status_msg( $self->password_changed_message ) } ) );
+	$c->detach;
 }
 
 =head1 TODO
