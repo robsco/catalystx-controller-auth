@@ -1,5 +1,7 @@
 Revision history for CatalystX-Controller-Auth
 
+0.14    3 May 2012 - Enable toggling of register functionality
+
 0.13    25 April 2012 - Registration email
 
 0.12    23-04-2012 - include 'register' inline with HTML::FormHandlerX::Form::Login

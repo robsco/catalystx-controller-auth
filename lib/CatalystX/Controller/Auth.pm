@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =cut
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 $VERSION = eval $VERSION;
 
@@ -30,6 +30,8 @@ has model                      => ( is => 'ro', isa => 'Str', default => 'DB::Us
 
 has login_id_field             => ( is => 'ro', isa => 'Str', default => 'username' );
 has login_id_db_field          => ( is => 'ro', isa => 'Str', default => 'username' );
+
+has enable_register            => ( is => 'ro', isa => 'Bool', default => 1 );
 
 has register_template          => ( is => 'ro', isa => 'Str', default => 'auth/register.tt');
 has login_template             => ( is => 'ro', isa => 'Str', default => 'auth/login.tt');
@@ -100,6 +102,8 @@ Configure it as you like ...
  	
          login_id_field                         email
          login_id_db_field                      email
+ 	 
+ 	 enable_register                        1
  	 
  	 register_template                      auth/register.tt
          login_template                         auth/login.tt
@@ -187,7 +191,7 @@ sub authenticated :Chained('base') :PathPart('') :CaptureArgs(0)
 
 =head2 register ( end-point: /register )
 
-Register.
+Register, unless the C<enable_register> option has been turned off (on by default).
 
  sub register :Chained('base') :PathPart :Args(0)
 
@@ -197,6 +201,12 @@ sub register :Chained('base') :PathPart :Args(0)
 {
 	my ( $self, $c ) = @_;
 
+	if ( ! $self->enable_register )
+	{
+		$c->res->redirect('/');
+		$c->detach;
+	}
+	
 	if ( $c->user_exists )
 	{
 		$c->response->redirect( $c->uri_for_action( $self->action_after_login, { mid => $c->set_status_msg( $self->already_logged_in_message ) } ) );
