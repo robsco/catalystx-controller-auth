@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.14
+Version 0.15
 
 =cut
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 $VERSION = eval $VERSION;
 
@@ -23,60 +23,61 @@ use namespace::autoclean;
 
 use HTML::FormHandlerX::Form::Login;
 
-has form_handler               => ( is => 'ro', isa => 'Str', default => 'HTML::FormHandlerX::Form::Login' );
+has form_handler                         => ( is => 'ro', isa => 'Str',  default => 'HTML::FormHandlerX::Form::Login' );
 
-has view                       => ( is => 'ro', isa => 'Str', default => 'TT' );
-has model                      => ( is => 'ro', isa => 'Str', default => 'DB::User' );
+has view                                 => ( is => 'ro', isa => 'Str',  default => 'TT' );
+has model                                => ( is => 'ro', isa => 'Str',  default => 'DB::User' );
 
-has login_id_field             => ( is => 'ro', isa => 'Str', default => 'username' );
-has login_id_db_field          => ( is => 'ro', isa => 'Str', default => 'username' );
+has login_id_field                       => ( is => 'ro', isa => 'Str',  default => 'username' );
+has login_id_db_field                    => ( is => 'ro', isa => 'Str',  default => 'username' );
 
-has enable_register            => ( is => 'ro', isa => 'Bool', default => 1 );
+has enable_register                      => ( is => 'ro', isa => 'Bool', default => 1 );
 
-has register_template          => ( is => 'ro', isa => 'Str', default => 'auth/register.tt');
-has login_template             => ( is => 'ro', isa => 'Str', default => 'auth/login.tt');
-has change_password_template   => ( is => 'ro', isa => 'Str', default => 'auth/change-password.tt' );
-has forgot_password_template   => ( is => 'ro', isa => 'Str', default => 'auth/forgot-password.tt' );
-has reset_password_template    => ( is => 'ro', isa => 'Str', default => 'auth/reset-password.tt' );
+has register_template                    => ( is => 'ro', isa => 'Str',  default => 'auth/register.tt'        );
+has login_template                       => ( is => 'ro', isa => 'Str',  default => 'auth/login.tt'           );
+has change_password_template             => ( is => 'ro', isa => 'Str',  default => 'auth/change-password.tt' );
+has forgot_password_template             => ( is => 'ro', isa => 'Str',  default => 'auth/forgot-password.tt' );
+has reset_password_template              => ( is => 'ro', isa => 'Str',  default => 'auth/reset-password.tt'  );
 
-has register_successful_message    => ( is => 'ro', isa => 'Str', default => "You are now registered." );
-has register_exists_failed_message => ( is => 'ro', isa => 'Str', default => "That username already exists." );
-has login_required_message         => ( is => 'ro', isa => 'Str', default => "You need to login." );
-has already_logged_in_message      => ( is => 'ro', isa => 'Str', default => "You are already logged in." );
-has login_successful_message       => ( is => 'ro', isa => 'Str', default => "You have logged in." );
-has logout_successful_message      => ( is => 'ro', isa => 'Str', default => "You have been logged out." );
-has login_failed_message           => ( is => 'ro', isa => 'Str', default => "Bad username or password." );
-has password_changed_message       => ( is => 'ro', isa => 'Str', default => "Password changed." );
-has password_reset_message         => ( is => 'ro', isa => 'Str', default => "Password reset successfully." );
-has forgot_password_id_unknown     => ( is => 'ro', isa => 'Str', default => "Email address not registered." );
+has register_successful_message          => ( is => 'ro', isa => 'Str',  default => "You are now registered."       );
+has register_exists_failed_message       => ( is => 'ro', isa => 'Str',  default => "That username already exists." );
+has login_required_message               => ( is => 'ro', isa => 'Str',  default => "You need to login."            );
+has already_logged_in_message            => ( is => 'ro', isa => 'Str',  default => "You are already logged in."    );
+has login_successful_message             => ( is => 'ro', isa => 'Str',  default => "You have logged in."           );
+has logout_successful_message            => ( is => 'ro', isa => 'Str',  default => "You have been logged out."     );
+has login_failed_message                 => ( is => 'ro', isa => 'Str',  default => "Bad username or password."     );
+has password_changed_message             => ( is => 'ro', isa => 'Str',  default => "Password changed."             );
+has password_reset_message               => ( is => 'ro', isa => 'Str',  default => "Password reset successfully."  );
+has forgot_password_id_unknown           => ( is => 'ro', isa => 'Str',  default => "Email address not registered." );
 
-has auto_login_after_register    => ( is => 'ro', isa => 'Bool', default => 1 );
+has auto_login_after_register            => ( is => 'ro', isa => 'Bool', default => 1 );
 
-has action_after_register        => ( is => 'ro', isa => 'Str', default => '/' );
-has action_after_login           => ( is => 'ro', isa => 'Str', default => '/' );
-has action_after_change_password => ( is => 'ro', isa => 'Str', default => '/' );
+has action_after_register                => ( is => 'ro', isa => 'Str',  default => '/' );
+has action_after_login                   => ( is => 'ro', isa => 'Str',  default => '/' );
+has action_after_change_password         => ( is => 'ro', isa => 'Str',  default => '/' );
 
-has forgot_password_email_view           => ( is => 'ro', isa => 'Str', default => 'Email::Template' );
-has forgot_password_email_from           => ( is => 'ro', isa => 'Str', default => '' );
-has forgot_password_email_subject        => ( is => 'ro', isa => 'Str', default => 'Forgot Password' );
-has forgot_password_email_template_plain => ( is => 'ro', isa => 'Str', default => 'reset-password-plain.tt' );
+has forgot_password_email_view           => ( is => 'ro', isa => 'Str',  default => 'Email::Template'         );
+has forgot_password_email_from           => ( is => 'ro', isa => 'Str',  default => 'nobody@localhost'        );
+has forgot_password_email_subject        => ( is => 'ro', isa => 'Str',  default => 'Forgot Password'         );
+has forgot_password_email_template_plain => ( is => 'ro', isa => 'Str',  default => 'reset-password-plain.tt' );
 
-has register_email_view           => ( is => 'ro', isa => 'Str', default => 'Email::Template' );
-has register_email_from           => ( is => 'ro', isa => 'Str', default => '' );
-has register_email_subject        => ( is => 'ro', isa => 'Str', default => 'Registration Success' );
-has register_email_template_plain => ( is => 'ro', isa => 'Str', default => 'register-plain.tt' );
+has register_email_view                  => ( is => 'ro', isa => 'Str',  default => 'Email::Template'      );
+has register_email_from                  => ( is => 'ro', isa => 'Str',  default => 'nobody@localhost'     );
+has register_email_subject               => ( is => 'ro', isa => 'Str',  default => 'Registration Success' );
+has register_email_template_plain        => ( is => 'ro', isa => 'Str',  default => 'register-plain.tt'    );
 
-has token_salt        => ( is => 'ro', isa => 'Str', default => "abc123" );
+has token_salt                           => ( is => 'ro', isa => 'Str',  default => "abc123" );
 
 BEGIN { extends 'Catalyst::Controller'; }
 
 =head1 SYNOPSIS
 
-This is a Catalyst controller for handling logging in/out and forgotten/changing/resetting passwords.
+This is a Catalyst controller for handling registering, logging in/out, forgotten/resetting passwords, and changing passwords.
 
-This controller was essentially born out of L<HTML::FormHandlerX::Form::Login> (which it obviously uses), though that form does not want to become dependant on Catalyst.
+This controller was essentially born out of L<HTML::FormHandlerX::Form::Login> (which it uses), though
+that form does not want to become dependant on Catalyst.
 
-See L<CatalystX::SimpleLogin> for an alternative (the plan is for both to merge).
+See L<CatalystX::SimpleLogin> for an alternative approach.
 
 Extend it for your own authentication controller, then modify your config as required.
 
@@ -112,12 +113,12 @@ Configure it as you like ...
          reset_password_template                auth/reset-password.tt
  
          forgot_password_email_view             Email::Template
-         forgot_password_email_from             "MyApp" <nobody@example.com>
+         forgot_password_email_from             "MyApp" <somebody@example.com>
          forgot_password_email_subject          Password Reset
          forgot_password_email_template_plain   reset-password-plain.tt
 
          register_email_view                    Email::Template
-         register_email_from                    "MyApp" <nobody@example.com>
+         register_email_from                    "MyApp" <somebody@example.com>
          register_email_subject                 Registration Success
          register_email_template_plain          register-plain.tt
  
@@ -150,11 +151,11 @@ All feedback and patches are always welcome.
 
 =head2 base ( mid-point: / )
 
-The controller currently bases off C</base>, ie...
+The controller currently chains/bases off C</base>, ie, the base chain in your Root controller.
 
  sub base :Chained('/base') :PathPart('') :CaptureArgs(0)
 
-Override the base of the chain if you wish to chain off some other mid-point in your own app.
+If you wish to chain off any other mid-point, and/or change the C<PathPart> (by default empty), you can override this action...
 
  sub base :Chained('/my_base') :PathPart('users') :CaptureArgs(0)
  {
@@ -172,7 +173,7 @@ sub base :Chained('/base') :PathPart('') :CaptureArgs(0)
 
 =head2 authenticated ( mid-point: / )
 
-Chain off this action to make sure people are logged in.
+Chain off this action to make sure the user is logged in.
 
  sub authenticated :Chained('base') :PathPart('') :CaptureArgs(0)
 
@@ -182,18 +183,33 @@ sub authenticated :Chained('base') :PathPart('') :CaptureArgs(0)
 {
 	my ( $self, $c ) = @_;
 	
-	if ( ! $c->user_exists )
-	{
-		$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_error_msg( $self->login_required_message ) } ) );
-		$c->detach;
-	}
+	$self->not_authenticated( $c ) if ! $c->user_exists;
+}
+
+=head2 not_authenticated
+
+This method is called if the user is not currently logged in.
+
+By default it redirects (and detaches) to the URI for the C<login> action with an C<error> message of C<login_required_message>.
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+=cut
+
+sub not_authenticated
+{
+	my ( $self, $c ) = @_;
+
+	$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_error_msg( $self->login_required_message ) } ) );
+	$c->detach;	
 }
 
 =head2 register ( end-point: /register )
 
 Register, unless the C<enable_register> option has been turned off (on by default).
 
- sub register :Chained('base') :PathPart :Args(0)
+If the user is already logged in, it redirects (and detaches) to the URI for C<action_after_login> with
+status message C<already_logged_in_message>.
 
 =cut
 
@@ -210,7 +226,7 @@ sub register :Chained('base') :PathPart :Args(0)
 	if ( $c->user_exists )
 	{
 		$c->response->redirect( $c->uri_for_action( $self->action_after_login, { mid => $c->set_status_msg( $self->already_logged_in_message ) } ) );
-		return;
+		$c->detach;
 	}
 
 	my $form = $self->form_handler->new( active => [ $self->login_id_field, 'password', 'confirm_password' ] );
@@ -238,8 +254,7 @@ sub register :Chained('base') :PathPart :Args(0)
 					$c->authenticate( { $self->login_id_db_field => $form->field( $self->login_id_field )->value, password => $form->field('password')->value } );
 				}
 				
-				$c->response->redirect( $c->uri_for_action( $self->action_after_register, { mid => $c->set_status_msg( $self->register_successful_message ) } ) );
-				return;
+				$self->post_register( $c );
 			}
 		}
 	}
@@ -251,7 +266,8 @@ sub register :Chained('base') :PathPart :Args(0)
 
 Uses C<Catalyst::View::Email::Template> by default.
 
-The 3 parameters passed are C<$self> (since it is an instance method), the Catalyst context C<$c>, and a hash containing the C<user> object.
+An instance method that is also passed the Catalyst context object C<$c>, along with a hash of extra
+parameteres, specifically the C<user> object.
 
 =cut
 
@@ -291,6 +307,24 @@ sub send_register_email
 	$c->stash( status_msg => "Registration email sent to " . $args{ user }->email );
 
 	return $self;
+}
+
+=head2 post_register
+
+Called after a user has successfully registered, and the register email has been sent (unless you have overridden C<send_register_email).
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+By default this method redirects to the URI for C<action_after_register> with status message C<register_successful_message>.
+
+=cut
+
+sub post_register
+{
+	my ( $self, $c ) = @_;
+				
+	$c->response->redirect( $c->uri_for_action( $self->action_after_register, { mid => $c->set_status_msg( $self->register_successful_message ) } ) );
+	$c->detach;
 }
 
 =head2 login ( end-point: /login )
@@ -344,7 +378,11 @@ sub login :Chained('base') :PathPart :Args(0)
 
 =head2 post_login
 
-After a successfull login.  By defualt redirects to C<action_after_login> with a status message of C<login_successful_message>.
+Called after a successfull login.
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+By defualt redirects (and detaches) to the URI for C<action_after_login> with a status message of C<login_successful_message>.
 
 =cut
 
@@ -375,7 +413,11 @@ sub logout :Chained('base') :PathPart :Args(0)
 
 =head2 post_logout
 
-After logging out.  By default redirects to C<login> with a status message of C<logout_successful_message.
+Called after logging out.
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+By default redirects (and detaches) to the URI for the C<login> action with a status message of C<logout_successful_message>.
 
 =cut
 
@@ -437,7 +479,8 @@ sub forgot_password :Chained('base') :PathPart('forgot-password') :Args(0)
 
 Uses C<Catalyst::View::Email::Template> by default.
 
-The 3 parameters passed are C<$self> (since it is an instance method), the Catalyst context C<$c>, and a hash containing the C<user> object.
+An instance method that is also passed the Catalyst context object C<$c>, along with a hash of extra
+parameteres, specifically the C<user> object.
 
 =cut
 
@@ -543,7 +586,11 @@ sub reset_password :Chained('base') :PathPart('reset-password') :Args(0)
 
 =head2 post_reset_password
 
-After successfully resetting a users password.  By default redirects to C<login> with a status message of C<password_reset_message>.
+After successfully resetting a users password.
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+By default redirects (and detaches) to the URI for the C<login> action with a status message of C<password_reset_message>.
 
 =cut
 
@@ -558,7 +605,9 @@ sub post_reset_password
 
 =head2 get ( mid-point: /auth/*/ )
 
-Gets a user and puts them in the stash.
+Get a user (by capturing the ID) and puts them in the stash.
+
+If no matching user is found, redirects to the URI for the C<login> action.
 
  sub get :Chained('base') :PathPart('auth') :CaptureArgs(1)
 
@@ -621,7 +670,11 @@ sub change_password :Chained('get') :PathPart('change-password') :Args(0)
 
 =head2 post_change_password
 
-After changing a password.  By default redirects to C<action_after_change_password> with status message C<password_changed_message>.
+After changing a password.
+
+An instance method that is also passed the Catalyst context object C<$c>.
+
+By default redirects (and detaches) to the URI for C<action_after_change_password> with status message C<password_changed_message>.
 
 =cut
 
