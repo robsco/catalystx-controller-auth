@@ -17,6 +17,7 @@ WriteMakefile(
         'Moose' => 0,
         'Catalyst::Controller' => 0,
         'HTML::FormHandlerX::Form::Login' => 0,
+        'Catalyst::Plugin::StatusMessage' => 0,
         
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.16
+Version 0.17
 
 =cut
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 $VERSION = eval $VERSION;
 
@@ -79,6 +79,14 @@ that form does not want to become dependant on Catalyst.
 
 See L<CatalystX::SimpleLogin> for an alternative approach.
 
+Ensure you include the L<Catalyst::Plugin::StatusMessage> in MyApp.pm.
+
+ use Catalyst qw/
+    ...
+    StatusMessage
+    ... 
+ /;
+ 
 Extend it for your own authentication controller, then modify your config as required.
 
  package MyApp::Controller::Auth;
@@ -104,9 +112,9 @@ Configure it as you like ...
          login_id_field                         email
          login_id_db_field                      email
  	 
- 	 enable_register                        1
+         enable_register                        1
  	 
- 	 register_template                      auth/register.tt
+         register_template                      auth/register.tt
          login_template                         auth/login.tt
          change_password_template               auth/change-password.tt
          forgot_password_template               auth/forgot-password.tt
@@ -135,7 +143,7 @@ Configure it as you like ...
  	
          token_salt                             'tgve546vy6yv%^$fghY56VH54& H54&%$uy^5 Y^53U&$u v5ev'
  	
- 	 auto_login_after_register              1
+         auto_login_after_register              1
  	 
          action_after_register                  /admin/index
          action_after_login                     /admin/index
