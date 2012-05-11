@@ -408,7 +408,7 @@ sub logout :Chained('base') :PathPart :Args(0)
 
 	$c->logout;
 
-	$c->post_logout( $c );
+	$self->post_logout( $c );
 }
 
 =head2 post_logout
