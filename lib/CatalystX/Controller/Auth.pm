@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.15
+Version 0.16
 
 =cut
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 $VERSION = eval $VERSION;
 
@@ -262,7 +262,7 @@ sub register :Chained('base') :PathPart :Args(0)
 	$c->stash( template => $self->register_template, form => $form );
 }
 
-=head2 _send_register_email
+=head2 send_register_email
 
 Uses C<Catalyst::View::Email::Template> by default.
 
@@ -311,7 +311,7 @@ sub send_register_email
 
 =head2 post_register
 
-Called after a user has successfully registered, and the register email has been sent (unless you have overridden C<send_register_email).
+Called after a user has successfully registered, and the register email has been sent (unless you have overridden C<send_register_email>).
 
 An instance method that is also passed the Catalyst context object C<$c>.
 
@@ -596,7 +596,7 @@ By default redirects (and detaches) to the URI for the C<login> action with a st
 
 sub post_reset_password
 {
-	my ( $self, $c )
+	my ( $self, $c ) = @_;
 
 	$c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_status_msg( $self->password_reset_message ) } ) );
 	$c->detach;

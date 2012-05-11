@@ -1,5 +1,7 @@
 Revision history for CatalystX-Controller-Auth
 
+0.16    11 May 2012 - basic method tests
+
 0.15    10 May 2012 - Extra hooks for customisation including more detailed POD
 
 0.14    3 May 2012 - Enable toggling of register functionality
