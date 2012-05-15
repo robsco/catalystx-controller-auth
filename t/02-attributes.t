@@ -11,12 +11,14 @@ my @methods = qw(
 form_handler
 
 view
-model
+realm
 
 login_id_field
 login_id_db_field
+db_id_field
 
 enable_register
+enable_sending_register_email
 
 register_template
 login_template
