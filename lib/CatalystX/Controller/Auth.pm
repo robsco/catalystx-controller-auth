@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.17
+Version 0.18
 
 =cut
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 $VERSION = eval $VERSION;
 
@@ -52,9 +52,9 @@ has forgot_password_id_unknown           => ( is => 'ro', isa => 'Str',  default
 
 has auto_login_after_register            => ( is => 'ro', isa => 'Bool', default => 1 );
 
-has action_after_register                => ( is => 'ro', isa => 'Str',  default => '/' );
-has action_after_login                   => ( is => 'ro', isa => 'Str',  default => '/' );
-has action_after_change_password         => ( is => 'ro', isa => 'Str',  default => '/' );
+has action_after_register                => ( is => 'ro', isa => 'Str',  );
+has action_after_login                   => ( is => 'ro', isa => 'Str',  );
+has action_after_change_password         => ( is => 'ro', isa => 'Str',  );
 
 has forgot_password_email_view           => ( is => 'ro', isa => 'Str',  default => 'Email::Template'         );
 has forgot_password_email_from           => ( is => 'ro', isa => 'Str',  default => 'nobody@localhost'        );
@@ -87,7 +87,10 @@ Ensure you include the L<Catalyst::Plugin::StatusMessage> in MyApp.pm.
     ... 
  /;
  
-Extend it for your own authentication controller, then modify your config as required.
+Extend this base controller class for your own authentication controller, then modify your config as required.
+
+The configs for C<action_after_register>, C<action_after_login>, and C<action_after_change_password> will all need
+specifying in your own config since they will be specific to your app.
 
  package MyApp::Controller::Auth;
  
