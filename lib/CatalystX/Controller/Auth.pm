@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.19
+Version 0.20
 
 =cut
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 $VERSION = eval $VERSION;
 
@@ -223,24 +223,23 @@ sub not_authenticated
 
 =head2 register ( end-point: /register )
 
-
-
-
-B<NOTE:> There is currently an issue with L<Catalyst::Authentication::Store::DBIx::Class::User> attempting to call C<auto_create()> when the backend resultset is L<DBIx::Class::ResultSet>.
-
-If you are using this backend and see something along the lines of...
-
- Can not locate object method "auto_create" via package "DBIx::Class::ResultSet" at /usr/lib/perl5/site_perl/5.8.8/Catalyst/Authentication/Store/DBIx/Class/User.pm line 241.
-
-You will need to modify L<Catalyst::Authentication::Store::DBIx::Class::User> to call C<create()> on the L<DBIx::Class::ResultSet> instead of C<auto_create()>.
-
-
-
-
 Register, unless the C<enable_register> option has been turned off (on by default).
 
 If the user is already logged in, it redirects (and detaches) to the URI for C<action_after_login> with
 status message C<already_logged_in_message>.
+
+Upon registering, an attempt is made to call C<auto_create()> on your C<model> (C<DB::User> if using the default configs above).
+
+A change is coming in May 2012 to this approach, to fallback to simply calling C<create()> if there is no C<auto_create> method in your model.
+
+In the meantime, if you do not wish to take advantage of this hook, you will need to create the method to simply call the C<create()> method of your model...
+
+ sub auto_create
+ {
+     my $self = shift;
+     
+     $self->create( @_ );
+ }
 
 =cut
 
