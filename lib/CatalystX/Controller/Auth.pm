@@ -14,7 +14,7 @@ Version 0.20
 
 =cut
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 $VERSION = eval $VERSION;
 
@@ -116,13 +116,13 @@ Configure it as you like ...
          
          view                                   TT
          model                                  DB::User
- 	
+    
          login_id_field                         email
          login_id_db_field                      email
- 	 
+     
          enable_register                        1
          enable_sending_register_email          1
- 	 
+     
          register_template                      auth/register.tt
          login_template                         auth/login.tt
          change_password_template               auth/change-password.tt
@@ -148,12 +148,12 @@ Configure it as you like ...
          login_failed_message                   "Bad username or password."
          password_changed_message               "Password changed."
          password_reset_message                 "Password reset successfully."
-         forgot_password_id_unknown             "Email address not registered."	
- 	
+         forgot_password_id_unknown             "Email address not registered." 
+    
          token_salt                             'tgve546vy6yv%^$fghY56VH54& H54&%$uy^5 Y^53U&$u v5ev'
- 	
+    
          auto_login_after_register              1
- 	 
+     
          action_after_register                  /admin/index
          action_after_login                     /admin/index
          action_after_change_password           /admin/index
@@ -218,7 +218,7 @@ sub not_authenticated
     my ( $self, $c ) = @_;
     
     $c->response->redirect( $c->uri_for( $self->action_for('login'), { mid => $c->set_error_msg( $self->login_required_message ) } ) );
-    $c->detach;	
+    $c->detach; 
 }
 
 =head2 register ( end-point: /register )
@@ -369,7 +369,7 @@ By default this method redirects to the URI for C<action_after_register> with st
 sub post_register
 {
     my ( $self, $c ) = @_;
-    			
+                
     $c->response->redirect( $c->uri_for_action( $self->action_after_register, { mid => $c->set_status_msg( $self->register_successful_message ) } ) );
     $c->detach;
 }
@@ -404,7 +404,7 @@ sub login :Chained('base') :PathPart :Args(0)
 
     my $form = $self->form_handler->new( active => $fields );
 
-    ## openid returns with GET params!	
+    ## openid returns with GET params!  
     if( $c->req->param && $c->req->param > 1 ) # at least 2 as we have the "mid" param.. 
     {
         $form->process( params => $c->request->params );
@@ -514,7 +514,7 @@ sub forgot_password :Chained('base') :PathPart('forgot-password') :Args(0)
             if ( $user )
             {
                 $c->stash( user => $user );
-         		
+                
                 $form->token_salt( $self->token_salt );
         
                 $form->add_token_field( $self->login_id_field );
@@ -554,7 +554,7 @@ sub _send_password_reset_email
     
     return $self;
 }
-	
+    
 sub send_password_reset_email
 {
     my ( $self, $c, %args ) = @_;
@@ -603,13 +603,13 @@ sub reset_password :Chained('base') :PathPart('reset-password') :Args(0)
     
     if ( $c->req->method eq 'GET' )
     {
-        $form = $self->form_handler->new( active => [ qw( token ) ] );
+        $form = $self->form_handler->new( active => [ qw( token password confirm_password ) ] );
     
         $form->token_salt( $self->token_salt );
     
         $form->add_token_field( $self->login_id_field );
     
-        $form->process( params => { token => $c->request->params->{ token } } );
+        $form->process( params => { token => $c->request->params->{ token }, password => '-', confirm_password => '-' } );   # will be cleared on render since they're password fields
     
         if ( ! $form->validated )
         {
@@ -634,7 +634,7 @@ sub reset_password :Chained('base') :PathPart('reset-password') :Args(0)
             
             $user->password( $form->field('password')->value );
             
-            $user->update;	
+            $user->update;  
             
             $self->post_reset_password( $c );
         }
@@ -718,7 +718,7 @@ sub change_password :Chained('get') :PathPart('change-password') :Args(0)
             {
                 $user->password( $form->field('password')->value );
             
-                $user->update;	
+                $user->update;  
             
                 $self->post_change_password( $c );
             }
@@ -741,7 +741,7 @@ By default redirects (and detaches) to the URI for C<action_after_change_passwor
 sub post_change_password
 {
     my ( $self, $c ) = @_;
-    			
+                
     $c->response->redirect( $c->uri_for_action( $self->action_after_change_password, { mid => $c->set_status_msg( $self->password_changed_message ) } ) );
     $c->detach;
 }

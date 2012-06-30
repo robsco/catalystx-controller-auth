@@ -1,5 +1,7 @@
 Revision history for CatalystX-Controller-Auth
 
+0.21    20 June 2012 - fix issue with inactive password field not rendering
+
 0.20    22 May 2012 - better docs for auto_create of user model
 
 0.19    15 May 2012 - castaway patch for openid (following HTML::FormHandlerX::Form::Login patch)
