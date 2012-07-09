@@ -1,5 +1,7 @@
 Revision history for CatalystX-Controller-Auth
 
+0.22    9 July 2012 - Catalyst::View::Email stash key is now a config attribute and use get_object call on user
+
 0.21    20 June 2012 - fix issue with inactive password field not rendering
 
 0.20    22 May 2012 - better docs for auto_create of user model

@@ -10,11 +10,11 @@ CatalystX::Controller::Auth - A config-driven Catalyst authentication controller
 
 =head1 VERSION
 
-Version 0.20
+Version 0.22
 
 =cut
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 $VERSION = eval $VERSION;
 
@@ -60,6 +60,8 @@ has auto_login_after_register            => ( is => 'ro', isa => 'Bool', default
 has action_after_register                => ( is => 'ro', isa => 'Str',  );
 has action_after_login                   => ( is => 'ro', isa => 'Str',  );
 has action_after_change_password         => ( is => 'ro', isa => 'Str',  );
+
+has email_stash_key                      => ( is => 'ro', isa => 'Str',  default => 'email_template'          );
 
 has forgot_password_email_view           => ( is => 'ro', isa => 'Str',  default => 'Email::Template'         );
 has forgot_password_email_from           => ( is => 'ro', isa => 'Str',  default => 'nobody@localhost'        );
@@ -129,6 +131,8 @@ Configure it as you like ...
          forgot_password_template               auth/forgot-password.tt
          reset_password_template                auth/reset-password.tt
  
+         email_stash_key                        email_template
+
          forgot_password_email_view             Email::Template
          forgot_password_email_from             "MyApp" <somebody@example.com>
          forgot_password_email_subject          Password Reset
@@ -279,13 +283,10 @@ sub register :Chained('base') :PathPart :Args(0)
 
                 if ( $auth_store->can('auto_create_user') ) 
                 {
-                $c->log->debug( "can auto_create_user");
-                
                     $user = $auth_store->auto_create_user( { $self->login_id_db_field => $form->field( $self->login_id_field )->value,
                                                              password                 => $form->field('password')->value,
                                                            }, $c
                                                          );
-                                                         $c->log->debug( "done auto-create");
                 }
                 else
                 {
@@ -336,22 +337,22 @@ sub send_register_email
     
     # send registration email to the user
     
-    $c->stash->{ email_template } = { to           => $args{ user }->email,
-                                      from         => $self->register_email_from,
-                                      subject      => $self->register_email_subject,
-                                      content_type => 'multipart/alternative',
-                                      templates => [ { template        => $self->register_email_template_plain,
-                                                       content_type    => 'text/plain',
-                                                       charset         => 'utf-8',
-                                                       encoding        => 'quoted-printable',
-                                                       view            => $self->view, 
-                                                     }
-                                                   ]
-                                    };
+    $c->stash->{ $self->email_stash_key } = { to           => $args{ user }->get_object->email,
+                                              from         => $self->register_email_from,
+                                              subject      => $self->register_email_subject,
+                                              content_type => 'multipart/alternative',
+                                              templates => [ { template        => $self->register_email_template_plain,
+                                                               content_type    => 'text/plain',
+                                                               charset         => 'utf-8',
+                                                               encoding        => 'quoted-printable',
+                                                               view            => $self->view, 
+                                                             }
+                                                           ]
+                                            };
     
     $c->forward( $c->view( $self->register_email_view ) );
     
-    $c->stash( status_msg => "Registration email sent to " . $args{ user }->email );
+    $c->stash( status_msg => "Registration email sent to " . $args{ user }->get_object->email );
     
     return $self;
 }
@@ -561,22 +562,22 @@ sub send_password_reset_email
     
     # send reset password username to the user
     
-    $c->stash->{ email_template } = { to           => $args{ user }->email,
-                                      from         => $self->forgot_password_email_from,
-                                      subject      => $self->forgot_password_email_subject,
-                                      content_type => 'multipart/alternative',
-                                      templates => [ { template        => $self->forgot_password_email_template_plain,
-                                                       content_type    => 'text/plain',
-                                                       charset         => 'utf-8',
-                                                       encoding        => 'quoted-printable',
-                                                       view            => $self->view, 
-                                                     }
-                                                   ]
-                                    };
+    $c->stash->{ $self->email_stash_key } = { to           => $args{ user }->get_object->email,
+                                              from         => $self->forgot_password_email_from,
+                                              subject      => $self->forgot_password_email_subject,
+                                              content_type => 'multipart/alternative',
+                                              templates => [ { template        => $self->forgot_password_email_template_plain,
+                                                               content_type    => 'text/plain',
+                                                               charset         => 'utf-8',
+                                                               encoding        => 'quoted-printable',
+                                                               view            => $self->view, 
+                                                             }
+                                                           ]
+                                            };
     
     $c->forward( $c->view( $self->forgot_password_email_view ) );
     
-    $c->stash( status_msg => "Password reset link sent to " . $args{ user }->email );
+    $c->stash( status_msg => "Password reset link sent to " . $args{ user }->get_object->email );
     
     return $self;
 }
@@ -710,7 +711,7 @@ sub change_password :Chained('get') :PathPart('change-password') :Args(0)
         {
             my $user = $c->stash->{ user };
             
-            if ( ! $c->authenticate( { $self->login_id_db_field => $user->email, password => $form->field('old_password')->value }, $self->realm ) )
+            if ( ! $c->authenticate( { $self->login_id_db_field => $user->get_object->email, password => $form->field('old_password')->value }, $self->realm ) )
             {
                 $c->stash( error_msg => 'Old password incorrect' );
             }
